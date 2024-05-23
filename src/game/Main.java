@@ -42,18 +42,22 @@ public class Main {
 				continue;
 			}
 
-			int indexOfRow = findIndexOfRow(rotatedShape, screen, indexOfColumn, screen.length - rotatedShape.length);
-
-			if (indexOfRow == -1) {
-				System.err.println("Game Over...");
+			int indexOfRow = findIndexOfRow(rotatedShape, screen, indexOfColumn);
+			System.out.println("Index of Row : " + indexOfRow);
+			if (indexOfRow < 0) {
+				System.out.println("\t+-------------+");
+				System.out.println("\t|  Game Over  |");
+				System.out.println("\t+-------------+");
 				gameOn = false;
 			} else {
 				addShapeInScreen(indexOfRow, indexOfColumn, rotatedShape, screen);
 			}
 		}
-
-		System.out.println("1. Play Again");
-		System.out.println("2. Exit the Game");
+		System.out.println("+--------------------+");
+		System.out.println("| 1. Play Again      |");
+		System.out.println("| 2. Exit the Game   |");
+		System.out.println("+--------------------+");
+		System.out.print("Enter : ");
 		int choice = sc.nextInt();
 
 		if (choice == 1) {
@@ -61,7 +65,9 @@ public class Main {
 			start();
 		} else {
 			sc.close();
-			System.out.println("Game Closed...");
+			System.out.println("\t+--------------+");
+			System.out.println("\t|  Game Closed |");
+			System.out.println("\t+--------------+");
 		}
 	}
 
@@ -76,36 +82,59 @@ public class Main {
 				}
 			}
 		}
-
 		printScreen(screen);
-		System.out.println("\nScore: " + Main.score);
+		findScore(rotatedShape, screen);
+		System.out.println("\nScore: " + Main.score + "\n");
 	}
 
-	private int findIndexOfRow(char[][] rotatedShape, char[][] screen, int indexOfColumn, int startRow) {
+	private void findScore(char[][] rotatedShape, char[][] screen) {
+		int count = 0;
+		int row = screen.length;
+		int col = screen[0].length;
+		int j;
+		for (int i = 0; i < row; i++) {
+			int temp = 0;
+			for (j = 0; j < col; j++) {
+				if (screen[i][j] == '#') {
+					temp++;
+				}
+			}
+			if (temp == col) {
+				removeColumnInScreen(i, screen, col);
+				j--;
+				count++;
+			}
+		}
+		Main.score += (count * count) * 10;
+	}
+
+	private void removeColumnInScreen(int index, char[][] screen, int col) {
+		for (int i = index; i >= 1; i--) {
+			for (int j = 0; j < col; j++) {
+				screen[i][j] = screen[i - 1][j];
+			}
+		}
+		for (int i = 0; i < col; i++) {
+			screen[0][i] = '\u0000';
+		}
+	}
+
+	private int findIndexOfRow(char[][] rotatedShape, char[][] screen, int indexOfColumn) {
 		int shapeHeight = rotatedShape.length;
 		int shapeWidth = rotatedShape[0].length;
+		int screenHeight = screen.length;
 
-		for (int i = startRow; i >= 0; i--) {
-			boolean canPlace = true;
+		for (int i = 0; i <= screenHeight - shapeHeight; i++) {
 
 			for (int row = 0; row < shapeHeight; row++) {
 				for (int col = 0; col < shapeWidth; col++) {
 					if (rotatedShape[row][col] == '#' && screen[i + row][indexOfColumn + col] == '#') {
-						canPlace = false;
-						break;
+						return i - 1;
 					}
 				}
-				if (!canPlace) {
-					break;
-				}
-			}
-
-			if (canPlace) {
-				return i;
 			}
 		}
-
-		return -1;
+		return screenHeight - shapeHeight;
 	}
 
 	private void printScreen(char[][] matrix) {
